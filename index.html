@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clinic Token Admin</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #1b262c, #0f4c75);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .admin-container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 40px;
+      border-radius: 16px;
+      width: 350px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .current-token {
+      font-size: 18px;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #0f4c75;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #e6e6e6;
+    }
+
+    .hint {
+      margin-top: 15px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <h1>Token Admin</h1>   
+
+<select id="doctorSelect" onchange="showCurrentToken()"></select>
+<p>Current Token: <strong id="currentToken"></strong></p>
+<input type="number" id="tokenInput" placeholder="New Token" />
+<button onclick="updateToken()">Update</button>
+
+    <div class="hint">
+      This will instantly update the display screen
+    </div>
+  </div>
+
+
+<script>
+  const API_URL = "https://token-g2cmdpfpdmemgjdz.canadacentral-01.azurewebsites.net/api/doctors";
+  let doctors = [];
+
+  async function loadDoctors() {
+    const res = await fetch(API_URL);
+    doctors = await res.json();
+
+    const select = document.getElementById("doctorSelect");
+    select.innerHTML = "";
+
+    doctors.forEach(d => {
+      select.innerHTML += `<option value="${d.doctorId}">
+        ${d.doctorName} (Counter ${d.counterNumber})
+      </option>`;
+    });
+
+    showCurrentToken();
+  }
+
+  function showCurrentToken() {
+    const id = document.getElementById("doctorSelect").value;
+    const doctor = doctors.find(d => d.doctorId == id);
+    document.getElementById("currentToken").textContent = doctor.currentToken;
+  }
+
+  async function updateToken() {
+    const id = document.getElementById("doctorSelect").value;
+    const token = document.getElementById("tokenInput").value;
+
+    await fetch(`${API_URL}/${id}/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(parseInt(token))
+    });
+
+    loadDoctors();
+  }
+
+  loadDoctors();
+</script>
+
+
+</body>
+</html>
